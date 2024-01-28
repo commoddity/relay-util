@@ -181,6 +181,7 @@ func (u *Util) SendRelays() {
 // setURLStringAndKey sets the URL and SecretKey fields on the Util struct.
 func (u *Util) setURLStringAndKey() {
 	if u.OverrideURL != "" {
+		u.URL = u.OverrideURL
 		return
 	}
 
