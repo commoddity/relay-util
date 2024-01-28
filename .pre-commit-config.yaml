@@ -6,7 +6,6 @@ repos:
       - id: check-merge-conflict
       - id: end-of-file-fixer
       - id: trailing-whitespace
-      - id: no-commit-to-branch
   - repo: https://github.com/pokt-foundation/backend-precommit-hooks
     rev: v0.0.10
     hooks:
@@ -22,11 +21,4 @@ repos:
     hooks:
       - id: detect-secrets
         args:
-          [
-            "--exclude-secrets",
-            "test_",
-            "--disable-plugin",
-            "KeywordDetector",
-            "--exclude-files",
-            "testdata/radix-spec.json",
-          ]
+          ["--exclude-secrets", "test_", "--disable-plugin", "KeywordDetector"]
