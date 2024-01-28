@@ -12,11 +12,6 @@ import (
 
 // Start checks if the .env file exists, if not, prompts the user to create it
 func Start() {
-	checkEnvFile()
-}
-
-// checkEnvFile checks if the .env file exists, if not, prompts the user to create it
-func checkEnvFile() {
 	_, err := os.Stat(env.EnvPath)
 	if os.IsNotExist(err) {
 		promptUser()
