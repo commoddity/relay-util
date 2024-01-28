@@ -2,8 +2,8 @@
     <h1>Relay Util</h1>
     <img src=".github/relay-util.png" alt="Relay Util logo" width="600"/>
     <br/>
-    <h6>Relay Util is a command-line tool written in Go that sends relays to a specified blockchain and logs the results.</h6>
-    <h6>It supports various flags to control its behavior.</h6>
+    <h6>Relay Util is a command-line tool written in Go that sends relays to a specified blockchain and logs the results.\n
+    It supports various flags to control its behavior.</h6>
 </div>
 <br/>
 
