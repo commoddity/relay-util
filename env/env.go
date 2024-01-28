@@ -5,14 +5,71 @@ package env
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	// autoload env vars
 	_ "github.com/joho/godotenv/autoload"
 )
 
-// MustGetString gets the required environment var as a string and panics if it is not present
-func MustGetString(varName string) string {
+const (
+	ProductionStarterAppID    = "PRODUCTION_STARTER_APP_ID"
+	ProductionStarterKey      = "PRODUCTION_STARTER_KEY"
+	ProductionEnterpriseAppID = "PRODUCTION_ENTERPRISE_APP_ID"
+	ProductionEnterpriseKey   = "PRODUCTION_ENTERPRISE_KEY"
+	StagingStarterAppID       = "STAGING_STARTER_APP_ID"
+	StagingStarterKey         = "STAGING_STARTER_KEY"
+	StagingEnterpriseAppID    = "STAGING_ENTERPRISE_APP_ID"
+	StagingEnterpriseKey      = "STAGING_ENTERPRISE_KEY"
+
+	PlanTypeStarter    PlanType = "FREETIER_V0"
+	PlanTypeEnterprise PlanType = "ENTERPRISE"
+
+	EnvProd    EnvType = "production"
+	EnvStaging EnvType = "staging"
+)
+
+var PlanTypeMap = map[string]PlanType{
+	"starter":    PlanTypeStarter,
+	"enterprise": PlanTypeEnterprise,
+}
+
+type (
+	EnvType  string
+	PlanType string
+
+	PortalAppData struct {
+		ID  string
+		Key string
+	}
+)
+
+// GatherAppIDs gathers the app IDs from the environment
+func GatherAppIDs() map[EnvType]map[PlanType]PortalAppData {
+	return map[EnvType]map[PlanType]PortalAppData{
+		EnvProd: {
+			PlanTypeStarter: PortalAppData{
+				ID:  mustGetString(ProductionStarterAppID),
+				Key: getString(ProductionStarterKey, ""),
+			},
+			PlanTypeEnterprise: PortalAppData{
+				ID:  mustGetString(ProductionEnterpriseAppID),
+				Key: getString(ProductionEnterpriseKey, ""),
+			},
+		},
+		EnvStaging: {
+			PlanTypeStarter: PortalAppData{
+				ID:  mustGetString(StagingStarterAppID),
+				Key: getString(StagingStarterKey, ""),
+			},
+			PlanTypeEnterprise: PortalAppData{
+				ID:  mustGetString(StagingEnterpriseAppID),
+				Key: getString(StagingEnterpriseKey, ""),
+			},
+		},
+	}
+}
+
+// mustGetString gets the required environment var as a string and panics if it is not present
+func mustGetString(varName string) string {
 	val, _ := os.LookupEnv(varName)
 	if val == "" {
 		panic(fmt.Sprintf("environment error (string): required env var %s not found", varName))
@@ -21,28 +78,12 @@ func MustGetString(varName string) string {
 	return val
 }
 
-// GetString gets the environment var as a string
-func GetString(varName string, defaultValue string) string {
+// getString gets the environment var as a string
+func getString(varName string, defaultValue string) string {
 	val, _ := os.LookupEnv(varName)
 	if val == "" {
 		return defaultValue
 	}
 
 	return val
-}
-
-// MustGetStringSlice gets the required environment var as a string slice and panics if it is not present
-func MustGetStringSlice(varName string) []string {
-	rawString := MustGetString(varName)
-	stringSlice := strings.Split(rawString, ",")
-
-	return stringSlice
-}
-
-// GetStringSlice gets the environment var as a string slice
-func GetStringSlice(varName, defaultValue string) []string {
-	rawString := GetString(varName, defaultValue)
-	stringSlice := strings.Split(rawString, ",")
-
-	return stringSlice
 }
