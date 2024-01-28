@@ -1,0 +1,32 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: no-commit-to-branch
+  - repo: https://github.com/pokt-foundation/backend-precommit-hooks
+    rev: v0.0.10
+    hooks:
+      - id: go-fmt
+      - id: go-imports
+      - id: golangci-lint
+      - id: go-critic
+      - id: go-build
+      - id: go-mod-tidy
+      - id: go-unit-tests
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args:
+          [
+            "--exclude-secrets",
+            "test_",
+            "--disable-plugin",
+            "KeywordDetector",
+            "--exclude-files",
+            "testdata/radix-spec.json",
+          ]

@@ -203,8 +203,6 @@ func (u *Util) setURLStringAndKey() {
 	}
 
 	u.SecretKey = u.AppIDs[u.Env][u.PlanType].Key
-
-	return
 }
 
 // IDFromString creates an ID from a string.

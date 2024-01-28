@@ -28,10 +28,26 @@ func promptUser() {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("👋 Welcome to the Relay Util app! It looks like you're running the app for the first time.\n❓ We need to gather a few variables to get started.\n🌿 In order to send relays for a specific environment and plan type combination you will need to enter a Portal App ID for that combination.\n➡️ You may skip entering a Portal App ID but you will not be able to send relays for the skipped environment and plan type combination until you enter a valid Portal App ID.\n🚀 Would you like to proceed?\n(yes/no): ")
 
+	// Set up a defer function to handle cleanup on interrupt
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("🚫 The Relay Util setup was aborted before being completed. Removing the .env file.")
+			removeErr := os.Remove(".env")
+			if removeErr != nil {
+				fmt.Println("🚫 Failed to remove the .env file:", removeErr)
+			}
+			os.Exit(1)
+		}
+	}()
+
 	text, _ := reader.ReadString('\n')
 	text = strings.ReplaceAll(text, "\n", "")
 	if strings.ToLower(text) == "yes" {
 		createEnvFile()
+	}
+
+	if text == "no" {
+		panic("🚫 Exiting program. Please set the correct Portal App IDs to proceed.")
 	}
 }
 
@@ -43,25 +59,10 @@ func createEnvFile() {
 		fmt.Println("🚫 Error creating .env file:", err)
 		return
 	}
-	defer file.Close()
 
 	// Set up a channel to listen for interrupt signals
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
-
-	// Set up a defer function to handle cleanup on interrupt
-	defer func() {
-		signal.Stop(c)
-
-		if r := recover(); r != nil {
-			fmt.Println("🚫 The Relay Util setup was aborted before being completed. Removing the .env file.")
-			removeErr := os.Remove(".env")
-			if removeErr != nil {
-				fmt.Println("🚫 Failed to remove the .env file:", removeErr)
-			}
-			panic(r) // re-throw the panic after cleaning up
-		}
-	}()
 
 	go func() {
 		<-c // Block until a signal is received.
@@ -69,6 +70,7 @@ func createEnvFile() {
 		if removeErr := os.Remove(".env"); removeErr != nil {
 			fmt.Println("🚫 Failed to remove the .env file:", removeErr)
 		}
+		file.Close()
 		os.Exit(1)
 	}()
 
@@ -125,6 +127,7 @@ func createEnvFile() {
 		}
 	}
 
+	file.Close()
 	clearConsole()
 	fmt.Println("📡 .env file has been created and populated; you are ready to send relays!")
 	fmt.Println("❔ To see the documentation for this app, run `relay-util --help` or `relay-util -h`")
@@ -156,18 +159,19 @@ func askForEnvVarUpdate(env, planType string) (string, string) {
 		text, _ := reader.ReadString('\n')
 		text = strings.TrimSpace(strings.ToLower(text))
 
-		if text == "yes" {
+		switch text {
+		case "yes":
+			clearConsole()
 			appIDValue, appKeyValue = updateEnvFile(env, planType)
-			break
-		} else if text == "no" {
+			return appIDValue, appKeyValue
+		case "no":
 			fmt.Println("🚫 Exiting program. Please set the correct Portal App ID to proceed.")
 			os.Exit(1)
-		} else {
+		default:
 			fmt.Println("🚫 Invalid input. Please type 'yes' or 'no'.")
+			askForEnvVarUpdate(env, planType)
 		}
 	}
-
-	return appIDValue, appKeyValue
 }
 
 // updateEnvFile updates the .env file with the new App ID and Key
