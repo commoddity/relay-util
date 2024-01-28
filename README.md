@@ -1,9 +1,9 @@
 <div align="center">
     <h1>Relay Util</h1>
     <img src=".github/relay-util.png" alt="Relay Util logo" width="600"/>
-    <big>
     <br/>
-Relay Util is a command-line tool written in Go that sends relays to a specified blockchain and logs the results. It supports various flags to control its behavior.</big>
+    <big>Relay Util is a command-line tool written in Go that sends relays to a specified blockchain and logs the results.</big>
+    <big>It supports various flags to control its behavior.</big>
 </div>
 <br/>
 
@@ -42,11 +42,3 @@ The project uses pre-commit hooks to ensure code quality. Run `make init-pre-com
 ## Environment Variables
 
 The project uses environment variables to configure various aspects of its operation. These variables are loaded from a `.env.relayutil` file in the user's home directory. If this file does not exist, the program will prompt the user to create it on first run.
-
-## Testing
-
-The project uses table-driven tests. The test variable name must be 'test' and the test name should start with "should".
-
-## Code Quality
-
-The project uses GitHub's CodeQL for static code analysis. The configuration for this can be found in `.github/workflows/codeql.yml`.
