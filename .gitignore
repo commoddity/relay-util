@@ -3,6 +3,7 @@ bin/*
 
 .env
 .env.*
+.env.relay-util
 
 relay-util
 */relay-util

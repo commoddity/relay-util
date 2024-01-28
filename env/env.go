@@ -5,9 +5,7 @@ package env
 import (
 	"fmt"
 	"os"
-
-	// autoload env vars
-	_ "github.com/joho/godotenv/autoload"
+	"path/filepath"
 )
 
 const (
@@ -25,6 +23,13 @@ const (
 
 	EnvProd    EnvType = "production"
 	EnvStaging EnvType = "staging"
+
+	envPath = ".env.relayutil"
+)
+
+var (
+	homeDir, _ = os.UserHomeDir()
+	EnvPath    = filepath.Join(homeDir, envPath)
 )
 
 type (

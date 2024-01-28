@@ -10,8 +10,6 @@ import (
 	"github.com/commoddity/relay-util/env"
 )
 
-const envPath = ".env"
-
 // Start checks if the .env file exists, if not, prompts the user to create it
 func Start() {
 	checkEnvFile()
@@ -19,7 +17,7 @@ func Start() {
 
 // checkEnvFile checks if the .env file exists, if not, prompts the user to create it
 func checkEnvFile() {
-	_, err := os.Stat(envPath)
+	_, err := os.Stat(env.EnvPath)
 	if os.IsNotExist(err) {
 		promptUser()
 	}
@@ -34,7 +32,7 @@ func promptUser() {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("🚫 The Relay Util setup was aborted before being completed. Removing the .env file.")
-			removeErr := os.Remove(envPath)
+			removeErr := os.Remove(env.EnvPath)
 			if removeErr != nil {
 				fmt.Println("🚫 Failed to remove the .env file:", removeErr)
 			}
@@ -56,7 +54,7 @@ func promptUser() {
 func createEnvFile() {
 	clearConsole()
 
-	file, err := os.OpenFile(envPath, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0600)
+	file, err := os.OpenFile(env.EnvPath, os.O_RDWR|os.O_CREATE|os.O_EXCL, 0600)
 	if err != nil {
 		fmt.Println("🚫 Error creating .env file:", err)
 		return
@@ -69,7 +67,7 @@ func createEnvFile() {
 	go func() {
 		<-c // Block until a signal is received.
 		fmt.Println("🚫 Interrupt signal received. Removing the .env file.")
-		if removeErr := os.Remove(envPath); removeErr != nil {
+		if removeErr := os.Remove(env.EnvPath); removeErr != nil {
 			fmt.Println("🚫 Failed to remove the .env file:", removeErr)
 		}
 		file.Close()
@@ -178,7 +176,7 @@ func askForEnvVarUpdate(env, planType string) (string, string) {
 
 // updateEnvFile updates the .env file with the new App ID and Key
 func updateEnvFile(envStr, planType string) (string, string) {
-	envFilePath := envPath
+	envFilePath := env.EnvPath
 	readFile, err := os.ReadFile(envFilePath)
 	if err != nil {
 		fmt.Println("🚫 Error reading .env file:", err)

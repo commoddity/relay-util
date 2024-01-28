@@ -11,12 +11,15 @@ import (
 	"github.com/commoddity/relay-util/log"
 	"github.com/commoddity/relay-util/relay"
 	"github.com/commoddity/relay-util/setup"
+	"github.com/joho/godotenv"
 	"github.com/spf13/pflag"
 )
 
 // init is a special function that is called before the main function
 // and sets up the flags and usage information for the program.
 func init() {
+	_ = godotenv.Load(env.EnvPath)
+
 	// Override the default help flag
 	pflag.BoolP("help", "h", false, "Display help information")
 
