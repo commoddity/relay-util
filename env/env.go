@@ -20,17 +20,12 @@ const (
 	StagingEnterpriseAppID    = "STAGING_ENTERPRISE_APP_ID"
 	StagingEnterpriseKey      = "STAGING_ENTERPRISE_KEY"
 
-	PlanTypeStarter    PlanType = "FREETIER_V0"
-	PlanTypeEnterprise PlanType = "ENTERPRISE"
+	PlanTypeStarter    PlanType = "starter"
+	PlanTypeEnterprise PlanType = "enterprise"
 
 	EnvProd    EnvType = "production"
 	EnvStaging EnvType = "staging"
 )
-
-var PlanTypeMap = map[string]PlanType{
-	"starter":    PlanTypeStarter,
-	"enterprise": PlanTypeEnterprise,
-}
 
 type (
 	EnvType  string

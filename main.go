@@ -126,7 +126,7 @@ func main() {
 		Env:           env.EnvType(envStr),
 		Local:         local,
 		SuccessBodies: successBodies,
-		PlanType:      env.PlanTypeMap[planType],
+		PlanType:      env.PlanType(planType),
 		Executions:    executions,
 		Goroutines:    goroutines,
 		Delay:         time.Duration(delay) * time.Millisecond,

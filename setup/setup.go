@@ -28,7 +28,7 @@ func checkEnvFile() {
 // promptUser prompts the user to create the .env file
 func promptUser() {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("👋 Welcome to the Relay Util app! It looks like you're running the app for the first time.\n❓ We need to gather a few variables to get started.\n🌿 In order to send relays for a specific environment and plan type combination you will need to enter a Portal App ID for that combination.\n➡️ You may skip entering a Portal App ID but you will not be able to send relays for the skipped environment and plan type combination until you enter a valid Portal App ID.\n🚀 Would you like to proceed?\n(yes/no): ")
+	fmt.Print("👋 Welcome to the Relay Util app! It looks like you're running the app for the first time.\n❓ We need to gather a few variables to get started.\n🌿 In order to send relays for a specific environment and plan type combination you will need to enter a Portal App ID for that combination.\n👀 You may skip entering a Portal App ID but you will not be able to send relays for the skipped environment and plan type combination until you enter a valid Portal App ID.\n🚀 Would you like to proceed?\n(yes/no): ")
 
 	// Set up a defer function to handle cleanup on interrupt
 	defer func() {
@@ -157,7 +157,7 @@ func askForEnvVarUpdate(env, planType string) (string, string) {
 	var appIDValue, appKeyValue string
 
 	for {
-		fmt.Printf("❓ Would you like to set the Portal App ID for %s and %s now? (yes/no):\n", env, planType)
+		fmt.Printf("❓ The relevant app ID for %s and %s is not set.\nWould you like to set the Portal App ID for %s and %s now? (yes/no):\n", env, planType, env, planType)
 		text, _ := reader.ReadString('\n')
 		text = strings.TrimSpace(strings.ToLower(text))
 
@@ -177,7 +177,7 @@ func askForEnvVarUpdate(env, planType string) (string, string) {
 }
 
 // updateEnvFile updates the .env file with the new App ID and Key
-func updateEnvFile(env, planType string) (string, string) {
+func updateEnvFile(envStr, planType string) (string, string) {
 	envFilePath := envPath
 	readFile, err := os.ReadFile(envFilePath)
 	if err != nil {
@@ -188,9 +188,9 @@ func updateEnvFile(env, planType string) (string, string) {
 	contents := string(readFile)
 
 	reader := bufio.NewReader(os.Stdin)
-	appIDKey, appKeyKey := getAppIDAndKeyKeys(env, planType)
+	appIDKey, appKeyKey := getAppIDAndKeyKeys(env.EnvType(envStr), env.PlanType(planType))
 
-	fmt.Printf("🌿 Enter the Portal App ID for %s and %s:\n", env, planType)
+	fmt.Printf("🌿 Enter the Portal App ID for %s and %s:\n", envStr, planType)
 	appIDValue, _ := reader.ReadString('\n')
 	appIDValue = strings.TrimSpace(appIDValue)
 
@@ -199,7 +199,7 @@ func updateEnvFile(env, planType string) (string, string) {
 		os.Setenv(appIDKey, appIDValue)
 	}
 
-	fmt.Printf("🔑 Enter the Secret Key for %s and %s (optional, press Enter to skip):\n", env, planType)
+	fmt.Printf("🔑 Enter the Secret Key for %s and %s (optional, press Enter to skip):\n", envStr, planType)
 	appKeyValue, _ := reader.ReadString('\n')
 	appKeyValue = strings.TrimSpace(appKeyValue)
 
@@ -238,18 +238,18 @@ func clearConsole() {
 }
 
 // getAppIDAndKeyKeys gets the App ID and Key keys for the environment and plan type
-func getAppIDAndKeyKeys(envStr, planType string) (appIDKey, appKeyKey string) {
+func getAppIDAndKeyKeys(envStr env.EnvType, planType env.PlanType) (appIDKey, appKeyKey string) {
 	switch envStr {
-	case "production":
-		if planType == "starter" {
+	case env.EnvProd:
+		if planType == env.PlanTypeStarter {
 			appIDKey = env.ProductionStarterAppID
 			appKeyKey = env.ProductionStarterKey
 		} else {
 			appIDKey = env.ProductionEnterpriseAppID
 			appKeyKey = env.ProductionEnterpriseKey
 		}
-	case "staging":
-		if planType == "starter" {
+	case env.EnvStaging:
+		if planType == env.PlanTypeStarter {
 			appIDKey = env.StagingStarterAppID
 			appKeyKey = env.StagingStarterKey
 		} else {
@@ -257,5 +257,6 @@ func getAppIDAndKeyKeys(envStr, planType string) (appIDKey, appKeyKey string) {
 			appKeyKey = env.StagingEnterpriseKey
 		}
 	}
+
 	return appIDKey, appKeyKey
 }
