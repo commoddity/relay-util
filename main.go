@@ -42,8 +42,6 @@ func init() {
 }
 
 func main() {
-	// Check if the .env file exists, if not, prompt the user to create it
-	setup.Start()
 
 	/* Flag Parsing */
 
@@ -71,6 +69,9 @@ func main() {
 		pflag.Usage()
 		return // Exit gracefully without calling os.Exit
 	}
+
+	// Check if the .env file exists, if not, prompt the user to create it
+	setup.Start()
 
 	if chain == "" {
 		fmt.Println("🚫 Missing required flag: -c, --chain for chain. Use --help for more information.")
