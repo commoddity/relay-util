@@ -42,11 +42,3 @@ The project uses pre-commit hooks to ensure code quality. Run `make init-pre-com
 ## Environment Variables
 
 The project uses environment variables to configure various aspects of its operation. These variables are loaded from a `.env.relayutil` file in the user's home directory. If this file does not exist, the program will prompt the user to create it on first run.
-
-## Testing
-
-The project uses table-driven tests. The test variable name must be 'test' and the test name should start with "should".
-
-## Code Quality
-
-The project uses GitHub's CodeQL for static code analysis. The configuration for this can be found in `.github/workflows/codeql.yml`.
