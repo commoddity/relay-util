@@ -9,15 +9,13 @@
 
 ## Installation
 
-Run 
 ```bash
 go install github.com/commoddity/relay-util@latest
 ```
 
 ## Usage
 
-```go
-bash
+```bash
 relay-util -c=<chain> -e=<environment> -p=<planType> -x=<executions> -r=<request> [-l] [-s] [-o=<overrideURL>] [-g=<goroutines>] [-d=<delay>]
 ```
 
