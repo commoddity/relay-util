@@ -1,6 +1,7 @@
 package log
 
 import (
+	"encoding/hex"
 	"fmt"
 	"math"
 	"net/url"
@@ -166,8 +167,38 @@ func LogResults(u *relay.Util) {
 		fmt.Printf("\n")
 		if len(successBodies) > 0 {
 			fmt.Println(green("Successful response bodies and their occurrences:"))
-			for successBody, count := range successBodies {
-				fmt.Printf("✅ %d occurrence%s - %s\n", count, suffixBasedOnLength(count), successBody)
+
+			// Convert map to slice for sorting
+			type kv struct {
+				Key   string
+				Value int
+			}
+
+			var ss []kv
+			for k, v := range successBodies {
+				ss = append(ss, kv{k, v})
+			}
+
+			// Sort by converting hex to number where possible, else by string
+			sort.Slice(ss, func(i, j int) bool {
+				decodedI, okI := hexToTextOrNumber(ss[i].Key)
+				decodedJ, okJ := hexToTextOrNumber(ss[j].Key)
+				if okI && okJ {
+					numI, _ := strconv.Atoi(strings.ReplaceAll(decodedI, ",", ""))
+					numJ, _ := strconv.Atoi(strings.ReplaceAll(decodedJ, ",", ""))
+					return numI < numJ
+				}
+				return ss[i].Key < ss[j].Key
+			})
+
+			for _, kv := range ss {
+				str := fmt.Sprintf("✅ %d occurrence%s - %s", kv.Value, suffixBasedOnLength(kv.Value), kv.Key)
+
+				if decodedHex, ok := hexToTextOrNumber(kv.Key); ok {
+					str = fmt.Sprintf("%s (%s)", str, decodedHex)
+				}
+
+				fmt.Println(str)
 			}
 		}
 	}
@@ -252,4 +283,27 @@ func suffixBasedOnLength(count int) string {
 		return "s"
 	}
 	return ""
+}
+
+// hexToTextOrNumber tries to convert a hex string to its text or number representation.
+// If the input is not a valid hex string, it returns the original input.
+func hexToTextOrNumber(hexStr string) (string, bool) {
+	// Remove the "0x" prefix if present and any potential quotes
+	trimmedHexStr := strings.TrimPrefix(strings.Trim(hexStr, "\""), "0x")
+
+	// Check if the string is a hex number and convert
+	if num, err := strconv.ParseInt(trimmedHexStr, 16, 64); err == nil {
+		formattedNum := formatWithCommas(int(num))
+		return formattedNum, true
+	}
+
+	// Attempt to decode hex to bytes assuming it could be a hex-encoded text
+	bytes, err := hex.DecodeString(trimmedHexStr)
+	if err != nil {
+		// Not a valid hex string, return original
+		return hexStr, false
+	}
+
+	// Convert bytes to string and return
+	return string(bytes), true
 }
