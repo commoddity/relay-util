@@ -7,10 +7,15 @@
 </div>
 <br/>
 
+## Installation
+
+```bash
+go install github.com/commoddity/relay-util@latest
+```
+
 ## Usage
 
-```go
-bash
+```bash
 relay-util -c=<chain> -e=<environment> -p=<planType> -x=<executions> -r=<request> [-l] [-s] [-o=<overrideURL>] [-g=<goroutines>] [-d=<delay>]
 ```
 
@@ -27,18 +32,19 @@ relay-util -c=<chain> -e=<environment> -p=<planType> -x=<executions> -r=<request
 - `-g, --goroutines`: The level of concurrency for sending relays. This defines how many goroutines will be used to send relays in parallel.
 - `-d, --delay`: The delay between individual relay requests, measured in milliseconds. This helps to control the rate at which relays are sent.
 
-## Building
+## Example Usage
 
-The project can be built for different platforms using the provided Makefile:
-
-- `make build-windows`: Builds the project for Windows.
-- `make build-linux`: Builds the project for Linux.
-- `make build-mac`: Builds the project for macOS.
-
-## Pre-commit Hooks
-
-The project uses pre-commit hooks to ensure code quality. Run `make init-pre-commit` to install the hooks.
+```bash
+relay-util \
+-c=eth-mainnet \
+-e=production \
+-p=enterprise \
+-r='{"jsonrpc": "2.0", "id": 1, "method": "eth_blockNumber" }' \
+-x=1000 \ 
+-g=100 \
+-d=25
+```
 
 ## Environment Variables
 
-The project uses environment variables to configure various aspects of its operation. These variables are loaded from a `.env.relayutil` file in the user's home directory. If this file does not exist, the program will prompt the user to create it on first run.
+The project uses environment variables to configure various aspects of its operation. These variables are loaded from a `.env.relayutil` file in the user's home directory. If this file does not exist, the program will walk through the setup for creating it when `relay-util` is run.
