@@ -73,6 +73,7 @@ type (
 		ExecTime      time.Duration
 		Local         bool
 		SuccessBodies bool
+		IsBatch       bool
 		ResultChan    chan RelayResult
 	}
 
@@ -101,6 +102,9 @@ func NewRelayUtil(config Config) *Util {
 	}
 
 	util.setURLStringAndKey()
+
+	// Determine if the request is a batch request
+	util.IsBatch = json.Valid([]byte(config.Request)) && strings.HasPrefix(strings.TrimSpace(config.Request), "[")
 
 	return util
 }
@@ -133,29 +137,38 @@ func (u *Util) SendRelays() {
 
 			startTime := time.Now() // Start time measurement
 
-			response, err := u.makeJSONRPCReq()             // Make the JSON-RPC request
-			latency := time.Since(startTime).Milliseconds() // Calculate latency
+			if u.IsBatch {
+				responses, err := u.makeJSONRPCBatchReq()       // Make the JSON-RPC request
+				latency := time.Since(startTime).Milliseconds() // Calculate latency
 
-			if err != nil {
-				result.Err = true
-				result.ErrReason = err.Error()
-				u.ResultChan <- result
-				return
-			}
-			if response == nil {
-				result.Err = true
-				result.ErrReason = "response is nil"
-				u.ResultChan <- result
-				return
-			}
+				successfulResponses := []*Response{}
 
-			if response.Error.Message != "" {
-				result.Err = true
-				result.ErrReason = fmt.Sprintf("code: %d, message: %s", response.Error.Code, response.Error.Message)
-				u.ResultChan <- result
-				return
-			} else {
-				responseJSON, err := json.Marshal(response.Result)
+				for _, response := range responses {
+					if err != nil {
+						result.Err = true
+						result.ErrReason = err.Error()
+						u.ResultChan <- result
+						return
+					}
+					if response == nil {
+						result.Err = true
+						result.ErrReason = "response is nil"
+						u.ResultChan <- result
+						return
+					}
+
+					if response.Error.Message != "" {
+						result.Err = true
+						result.ErrReason = fmt.Sprintf("code: %d, message: %s", response.Error.Code, response.Error.Message)
+						u.ResultChan <- result
+						return
+					} else {
+						successfulResponses = append(successfulResponses, response)
+					}
+
+				}
+
+				responseJSON, err := json.Marshal(successfulResponses)
 				if err != nil {
 					result.Err = true
 					result.ErrReason = "failed to marshal response result to JSON"
@@ -167,7 +180,44 @@ func (u *Util) SendRelays() {
 				result.Latency = int32(latency) // Store latency in the result
 				u.ResultChan <- result
 				return
+			} else {
+				response, err := u.makeJSONRPCReq()             // Make the JSON-RPC request
+				latency := time.Since(startTime).Milliseconds() // Calculate latency
+
+				if err != nil {
+					result.Err = true
+					result.ErrReason = err.Error()
+					u.ResultChan <- result
+					return
+				}
+				if response == nil {
+					result.Err = true
+					result.ErrReason = "response is nil"
+					u.ResultChan <- result
+					return
+				}
+
+				if response.Error.Message != "" {
+					result.Err = true
+					result.ErrReason = fmt.Sprintf("code: %d, message: %s", response.Error.Code, response.Error.Message)
+					u.ResultChan <- result
+					return
+				} else {
+					responseJSON, err := json.Marshal(response.Result)
+					if err != nil {
+						result.Err = true
+						result.ErrReason = "failed to marshal response result to JSON"
+						u.ResultChan <- result
+						return
+					}
+
+					result.SuccessBody = string(responseJSON)
+					result.Latency = int32(latency) // Store latency in the result
+					u.ResultChan <- result
+					return
+				}
 			}
+
 		},
 	)
 
@@ -278,6 +328,38 @@ func (u *Util) makeJSONRPCReq() (*Response, error) {
 	}
 
 	return &resp, nil
+}
+
+// makeJSONRPCBatchReq makes a JSON-RPC request to the Portal API.
+func (u *Util) makeJSONRPCBatchReq() ([]*Response, error) {
+	req, err := http.NewRequest(http.MethodPost, u.URL, bytes.NewBuffer([]byte(u.Request)))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	if u.OverrideURL == "" && u.SecretKey != "" {
+		req.Header.Set("Authorization", u.SecretKey)
+	}
+
+	httpResp, err := u.HTTPClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer httpResp.Body.Close()
+	body, err := io.ReadAll(httpResp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp []*Response
+	err = json.Unmarshal(body, &resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
 
 // getGoroutinesConfig returns the goroutines config based on the plan type.
