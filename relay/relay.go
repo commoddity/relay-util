@@ -53,6 +53,7 @@ type (
 		Executions    int
 		Goroutines    int
 		Delay         time.Duration
+		Timeout       time.Duration
 		Local         bool
 		SuccessBodies bool
 	}
@@ -70,6 +71,7 @@ type (
 		Executions    int
 		Goroutines    int
 		Delay         time.Duration
+		Timeout       time.Duration
 		ExecTime      time.Duration
 		Local         bool
 		SuccessBodies bool
@@ -86,7 +88,7 @@ type (
 // NewRelayUtil creates a new instance of the Relay Util.
 func NewRelayUtil(config Config) *Util {
 	util := &Util{
-		HTTPClient:    &http.Client{Timeout: 5 * time.Second},
+		HTTPClient:    &http.Client{Timeout: config.Timeout},
 		AppIDs:        env.GatherAppIDs(),
 		ResultChan:    make(chan RelayResult, config.Executions),
 		Env:           config.Env,
@@ -97,6 +99,7 @@ func NewRelayUtil(config Config) *Util {
 		Executions:    config.Executions,
 		Goroutines:    config.Goroutines,
 		Delay:         config.Delay,
+		Timeout:       config.Timeout,
 		Local:         config.Local,
 		SuccessBodies: config.SuccessBodies,
 	}
@@ -242,7 +245,7 @@ func (u *Util) setURLStringAndKey() {
 	}
 
 	if u.Local {
-		u.URL = fmt.Sprintf("http://%s.localhost:3000/v1/%s", u.Chain, appID)
+		u.URL = fmt.Sprintf("http://%s.localhost:8100/v1/%s", u.Chain, appID)
 	} else {
 		var domain string
 		if u.Env == env.EnvProd {

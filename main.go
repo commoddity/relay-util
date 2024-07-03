@@ -38,6 +38,7 @@ func init() {
 		fmt.Fprintf(os.Stderr, "    -x=3000 \\\n")
 		fmt.Fprintf(os.Stderr, "    -d=10 \\\n")
 		fmt.Fprintf(os.Stderr, "    -g=500\n")
+		fmt.Fprintf(os.Stderr, "    -t=20\n")
 	}
 }
 
@@ -46,7 +47,7 @@ func main() {
 	/* Flag Parsing */
 
 	var chain, envStr, planType, request, overrideURL string
-	var executions, goroutines, delay int
+	var executions, goroutines, delay, timeout int
 	var local, successBodies bool
 
 	// Required flags
@@ -60,6 +61,7 @@ func main() {
 	pflag.StringVarP(&overrideURL, "override-url", "o", "", "A custom URL to override the default endpoint. This allows you to specify a different URL for sending relays.")
 	pflag.IntVarP(&goroutines, "goroutines", "g", 0, "The level of concurrency for sending relays. This defines how many goroutines will be used to send relays in parallel.")
 	pflag.IntVarP(&delay, "delay", "d", 10, "The delay between individual relay requests, measured in milliseconds. This helps to control the rate at which relays are sent.")
+	pflag.IntVarP(&timeout, "timeout", "t", 20, "The timeout for individual relay requests, measured in seconds. [default: 20]")
 
 	pflag.Parse()
 
@@ -134,6 +136,7 @@ func main() {
 		Executions:    executions,
 		Goroutines:    goroutines,
 		Delay:         time.Duration(delay) * time.Millisecond,
+		Timeout:       time.Duration(timeout) * time.Second,
 		OverrideURL:   overrideURL,
 	}
 

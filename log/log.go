@@ -41,6 +41,7 @@ func PrintConfig(u *relay.Util) {
 	}
 	fmt.Printf("%s 🧵 Goroutines: %s\n", blue("DETAIL"), formatWithCommas(u.Goroutines))
 	fmt.Printf("%s ⏱️  Delay: %s\n", blue("DETAIL"), u.Delay)
+	fmt.Printf("%s ⏳ Timeout: %s\n", blue("DETAIL"), u.Timeout)
 	fmt.Printf("%s 🌍 Env: %s\n", yellow("CONFIG"), u.Env)
 	fmt.Printf("%s 📝 Plan Type: %s\n", yellow("CONFIG"), u.PlanType)
 	fmt.Printf("%s 🔗 Chain: %s\n", yellow("CONFIG"), u.Chain)
