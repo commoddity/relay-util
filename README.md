@@ -40,7 +40,7 @@ relay-util \
 -e=production \
 -p=enterprise \
 -r='{"jsonrpc": "2.0", "id": 1, "method": "eth_blockNumber" }' \
--x=1000 \ 
+-x=1000 \
 -g=100 \
 -d=25
 ```

@@ -86,7 +86,6 @@ func LogResults(u *relay.Util) {
 				latencies = append(latencies, result.Latency)
 			}
 		}
-
 	}
 
 	successRate := float64(successfulRelays) / float64(totalRelays) * 100
@@ -215,6 +214,7 @@ func LogResults(u *relay.Util) {
 	// Log latencies
 	fmt.Printf("\n")
 	fmt.Println(blue("🕒 LATENCIES"))
+	fmt.Printf("📈 RPS: %.2f\n", u.RequestsPerSecond)
 	fmt.Printf("🔊 P90 latency: %s\n", colorForLatency(int32(p90Latency))("%dms", p90Latency))
 	fmt.Printf("🐕 Average latency: %s\n", colorForLatency(int32(averageLatency))("%.2fms", averageLatency))
 	fmt.Printf("🦅 Lowest latency: %s\n", colorForLatency(int32(lowestLatency))("%dms", lowestLatency))

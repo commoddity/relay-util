@@ -59,24 +59,25 @@ type (
 	}
 
 	Util struct {
-		HTTPClient    *http.Client
-		AppIDs        map[env.EnvType]map[env.PlanType]env.PortalAppData
-		Env           env.EnvType
-		PlanType      env.PlanType
-		Chain         string
-		URL           string
-		SecretKey     string
-		Request       string
-		OverrideURL   string
-		Executions    int
-		Goroutines    int
-		Delay         time.Duration
-		Timeout       time.Duration
-		ExecTime      time.Duration
-		Local         bool
-		SuccessBodies bool
-		IsBatch       bool
-		ResultChan    chan RelayResult
+		HTTPClient        *http.Client
+		AppIDs            map[env.EnvType]map[env.PlanType]env.PortalAppData
+		Env               env.EnvType
+		PlanType          env.PlanType
+		Chain             string
+		URL               string
+		SecretKey         string
+		Request           string
+		OverrideURL       string
+		Executions        int
+		Goroutines        int
+		RequestsPerSecond float64
+		Delay             time.Duration
+		Timeout           time.Duration
+		ExecTime          time.Duration
+		Local             bool
+		SuccessBodies     bool
+		IsBatch           bool
+		ResultChan        chan RelayResult
 	}
 
 	goroutinesConfig struct {
@@ -179,6 +180,13 @@ func (u *Util) SendRelays() {
 					return
 				}
 
+				if string(responseJSON) == "null" {
+					result.Err = true
+					result.ErrReason = "response body is set to 'null'"
+					u.ResultChan <- result
+					return
+				}
+
 				result.SuccessBody = string(responseJSON)
 				result.Latency = int32(latency) // Store latency in the result
 				u.ResultChan <- result
@@ -214,6 +222,13 @@ func (u *Util) SendRelays() {
 						return
 					}
 
+					if string(responseJSON) == "null" {
+						result.Err = true
+						result.ErrReason = "response body is set to 'null'"
+						u.ResultChan <- result
+						return
+					}
+
 					result.SuccessBody = string(responseJSON)
 					result.Latency = int32(latency) // Store latency in the result
 					u.ResultChan <- result
@@ -225,6 +240,8 @@ func (u *Util) SendRelays() {
 	)
 
 	u.ExecTime = time.Since(startTime) // Capture the execution time
+
+	u.RequestsPerSecond = float64(u.Executions) / u.ExecTime.Seconds()
 
 	bar.SetCurrent(int64(u.Executions)).Set("prefix", "🎉 All relays sent!").Finish()
 
