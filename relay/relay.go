@@ -56,28 +56,31 @@ type (
 		Timeout       time.Duration
 		Local         bool
 		SuccessBodies bool
+		Authorization string
 	}
 
 	Util struct {
-		HTTPClient        *http.Client
-		AppIDs            map[env.EnvType]map[env.PlanType]env.PortalAppData
-		Env               env.EnvType
-		PlanType          env.PlanType
-		Chain             string
-		URL               string
-		SecretKey         string
-		Request           string
-		OverrideURL       string
-		Executions        int
-		Goroutines        int
-		RequestsPerSecond float64
-		Delay             time.Duration
-		Timeout           time.Duration
-		ExecTime          time.Duration
-		Local             bool
-		SuccessBodies     bool
-		IsBatch           bool
-		ResultChan        chan RelayResult
+		HTTPClient            *http.Client
+		AppIDs                map[env.EnvType]map[env.PlanType]env.PortalAppData
+		Env                   env.EnvType
+		PlanType              env.PlanType
+		Chain                 string
+		URL                   string
+		SecretKey             string
+		Request               string
+		OverrideURL           string
+		Executions            int
+		Goroutines            int
+		GoroutinesConfig      goroutinesConfig
+		RequestsPerSecond     float64
+		Delay                 time.Duration
+		Timeout               time.Duration
+		ExecTime              time.Duration
+		Local                 bool
+		SuccessBodies         bool
+		IsBatch               bool
+		ResultChan            chan RelayResult
+		AuthorizationOverride string
 	}
 
 	goroutinesConfig struct {
@@ -89,21 +92,24 @@ type (
 // NewRelayUtil creates a new instance of the Relay Util.
 func NewRelayUtil(config Config) *Util {
 	util := &Util{
-		HTTPClient:    &http.Client{Timeout: config.Timeout},
-		AppIDs:        env.GatherAppIDs(),
-		ResultChan:    make(chan RelayResult, config.Executions),
-		Env:           config.Env,
-		PlanType:      config.PlanType,
-		Chain:         config.Chain,
-		Request:       config.Request,
-		OverrideURL:   config.OverrideURL,
-		Executions:    config.Executions,
-		Goroutines:    config.Goroutines,
-		Delay:         config.Delay,
-		Timeout:       config.Timeout,
-		Local:         config.Local,
-		SuccessBodies: config.SuccessBodies,
+		HTTPClient:            &http.Client{Timeout: config.Timeout},
+		AppIDs:                env.GatherAppIDs(),
+		ResultChan:            make(chan RelayResult, config.Executions),
+		Env:                   config.Env,
+		PlanType:              config.PlanType,
+		Chain:                 config.Chain,
+		Request:               config.Request,
+		OverrideURL:           config.OverrideURL,
+		Executions:            config.Executions,
+		Goroutines:            config.Goroutines,
+		Delay:                 config.Delay,
+		Timeout:               config.Timeout,
+		Local:                 config.Local,
+		SuccessBodies:         config.SuccessBodies,
+		AuthorizationOverride: config.Authorization,
 	}
+
+	util.GoroutinesConfig = util.getGoroutinesConfig(util.PlanType, util.Goroutines, util.Delay)
 
 	util.setURLStringAndKey()
 
@@ -128,7 +134,7 @@ func (u *Util) SendRelays() {
 	bar.SetMaxWidth(90)
 
 	runInGoroutines(
-		getGoroutinesConfig(u.PlanType, u.Goroutines, u.Delay),
+		u.GoroutinesConfig,
 		u.Executions,
 		func() {
 			currentRelay := counter.Add(1)
@@ -262,7 +268,7 @@ func (u *Util) setURLStringAndKey() {
 	}
 
 	if u.Local {
-		u.URL = fmt.Sprintf("http://%s.localhost:8100/v1/%s", u.Chain, appID)
+		u.URL = fmt.Sprintf("http://localhost:8080/relay/%s", u.Chain)
 	} else {
 		var domain string
 		if u.Env == env.EnvProd {
@@ -326,7 +332,9 @@ func (u *Util) makeJSONRPCReq() (*Response, error) {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	if u.OverrideURL == "" && u.SecretKey != "" {
+	if u.AuthorizationOverride != "" {
+		req.Header.Set("Authorization", u.AuthorizationOverride)
+	} else if u.SecretKey != "" {
 		req.Header.Set("Authorization", u.SecretKey)
 	}
 
@@ -344,6 +352,7 @@ func (u *Util) makeJSONRPCReq() (*Response, error) {
 	var resp Response
 	err = json.Unmarshal(body, &resp)
 	if err != nil {
+		fmt.Println("ERROR HERE", string(body))
 		return nil, err
 	}
 
@@ -383,11 +392,17 @@ func (u *Util) makeJSONRPCBatchReq() ([]*Response, error) {
 }
 
 // getGoroutinesConfig returns the goroutines config based on the plan type.
-func getGoroutinesConfig(planType env.PlanType, goroutines int, delay time.Duration) goroutinesConfig {
+func (u *Util) getGoroutinesConfig(planType env.PlanType, goroutines int, delay time.Duration) goroutinesConfig {
 	if planType == env.PlanTypeStarter {
+		starterGoroutines := 3
+		starterDelay := (1 * time.Second) / 50
+
+		u.Goroutines = starterGoroutines
+		u.Delay = starterDelay
+
 		return goroutinesConfig{
-			goroutines: 30,
-			delay:      1_000 * time.Millisecond,
+			goroutines: starterGoroutines,
+			delay:      starterDelay,
 		}
 	}
 

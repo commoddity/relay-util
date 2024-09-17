@@ -46,7 +46,7 @@ func main() {
 
 	/* Flag Parsing */
 
-	var chain, envStr, planType, request, overrideURL string
+	var chain, envStr, planType, request, overrideURL, authorization string
 	var executions, goroutines, delay, timeout int
 	var local, successBodies bool
 
@@ -59,6 +59,7 @@ func main() {
 	pflag.BoolVarP(&local, "local", "l", false, "A flag to indicate if the relays should be sent to a local environment. Useful for testing locally.")
 	pflag.BoolVarP(&successBodies, "success-bodies", "s", false, "A flag that, when set, will cause the bodies of successful relay responses to be displayed in the log output.")
 	pflag.StringVarP(&overrideURL, "override-url", "o", "", "A custom URL to override the default endpoint. This allows you to specify a different URL for sending relays.")
+	pflag.StringVarP(&authorization, "authorization", "a", "", "Override the Authorization header with a custom value.")
 	pflag.IntVarP(&goroutines, "goroutines", "g", 0, "The level of concurrency for sending relays. This defines how many goroutines will be used to send relays in parallel.")
 	pflag.IntVarP(&delay, "delay", "d", 10, "The delay between individual relay requests, measured in milliseconds. This helps to control the rate at which relays are sent.")
 	pflag.IntVarP(&timeout, "timeout", "t", 20, "The timeout for individual relay requests, measured in seconds. [default: 20]")
@@ -138,6 +139,7 @@ func main() {
 		Delay:         time.Duration(delay) * time.Millisecond,
 		Timeout:       time.Duration(timeout) * time.Second,
 		OverrideURL:   overrideURL,
+		Authorization: authorization,
 	}
 
 	relayUtil := relay.NewRelayUtil(config)
