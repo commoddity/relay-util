@@ -472,3 +472,43 @@ func updateAppIDAndKeyIfDummy(u *Util, appID string) (updated bool) {
 
 	return false
 }
+
+// UnmarshalJSON unmarshals a Response from JSON.
+func (r *Response) UnmarshalJSON(data []byte) error {
+	type Alias Response
+	aux := &struct {
+		Error interface{} `json:"error,omitempty"`
+		*Alias
+	}{
+		Alias: (*Alias)(r),
+	}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	switch v := aux.Error.(type) {
+	case nil:
+		// If error is nil, set r.Error to nil
+		r.Error = RelayError{}
+	case map[string]interface{}:
+		// Attempt to unmarshal into RelayError
+		var relayErr RelayError
+		errData, err := json.Marshal(v)
+		if err != nil {
+			return err
+		}
+		if err := json.Unmarshal(errData, &relayErr); err != nil {
+			return err
+		}
+		r.Error = relayErr
+	case string:
+		// If it's a string, set the error message
+		r.Error = RelayError{Message: v}
+	default:
+		// Handle unexpected types
+		return fmt.Errorf("unexpected error type: %T", v)
+	}
+
+	return nil
+}
