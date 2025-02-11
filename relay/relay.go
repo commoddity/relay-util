@@ -44,7 +44,6 @@ type (
 
 	Config struct {
 		URL           string
-		Service       string
 		Body          []byte
 		Headers       http.Header
 		Executions    int
@@ -57,7 +56,6 @@ type (
 	Util struct {
 		HTTPClient        *http.Client
 		URL               string
-		Service           string
 		Body              []byte
 		Headers           http.Header
 		Executions        int
@@ -84,7 +82,6 @@ func NewRelayUtil(config Config) *Util {
 		HTTPClient:    &http.Client{Timeout: config.Timeout},
 		ResultChan:    make(chan RelayResult, config.Executions),
 		URL:           config.URL,
-		Service:       config.Service,
 		Body:          config.Body,
 		Headers:       config.Headers,
 		Executions:    config.Executions,
@@ -279,10 +276,7 @@ func (i ID) String() string {
 
 // Add the setRequestHeaders method to the Util struct
 func (u *Util) setRequestHeaders(req *http.Request) {
-	// Set the "target-service-id" header
-	req.Header.Set("target-service-id", u.Service)
-
-	// Set any other headers from the Util struct
+	// Set headers from the Util struct
 	for key, values := range u.Headers {
 		for _, value := range values {
 			req.Header.Add(key, value)

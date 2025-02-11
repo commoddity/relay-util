@@ -31,27 +31,33 @@ func PrintConfig(u *relay.Util) {
 	green := color.New(color.FgGreen).SprintFunc()
 	blue := color.New(color.FgBlue).SprintFunc()
 	magenta := color.New(color.FgMagenta).SprintFunc()
-	yellow := color.New(color.FgYellow).SprintFunc()
 
 	// Print the messages with colors and emojis
 	fmt.Printf("%s 🚀 Sending %s relays to %s\n", green("INFO"), formatWithCommas(u.Executions), maskAppID(urlStr.String()))
-	fmt.Printf("%s 🔗 Service: %s\n", yellow("CONFIG"), u.Service)
-	fmt.Printf("%s 📄 Request Body: %s\n", magenta("REQUEST"), string(u.Body))
-	fmt.Printf("%s 🧵 Goroutines: %s\n", blue("DETAIL"), formatWithCommas(u.Goroutines))
-	fmt.Printf("%s ⏱️  Wait: %s\n", blue("DETAIL"), u.Wait)
-	fmt.Printf("%s ⏳ Timeout: %s\n", blue("DETAIL"), u.Timeout)
+	fmt.Printf("%s 📦 Request Body: %s\n", magenta("REQUEST"), string(u.Body))
 	// Print headers
 	if len(u.Headers) > 0 {
-		fmt.Printf("%s 📬 Headers:\n", magenta("HEADERS"))
+		fmt.Printf("%s ⚙️ Headers:\n", magenta("HEADERS"))
 		for key, values := range u.Headers {
 			for _, value := range values {
+				emoji := "📎"
+				color := magenta
 				if strings.ToLower(key) == "authorization" {
+					color = green
+					emoji = "🔐"
 					value = "*****"
 				}
-				fmt.Printf("  %s: %s\n", key, value)
+				if strings.ToLower(key) == "target-service-id" {
+					color = blue
+					emoji = "⛓️"
+				}
+				fmt.Printf(" %s  %s: %s \n", emoji, color(key), value)
 			}
 		}
 	}
+	fmt.Printf("%s 🧵 Goroutines: %s\n", blue("CONFIG"), formatWithCommas(u.Goroutines))
+	fmt.Printf("%s ⏱️  Wait: %s\n", blue("CONFIG"), u.Wait)
+	fmt.Printf("%s ⏳ Timeout: %s\n", blue("CONFIG"), u.Timeout)
 }
 
 // LogResults logs the results of the relay execution to the console

@@ -41,14 +41,13 @@ func init() {
 
 func main() {
 	/* Flag Parsing */
-	var service, data, url string
+	var data, url string
 	var executions, goroutines, wait, timeout int
 	var successBodies bool
 	var headers []string
 
 	// Required flags
 	pflag.StringVarP(&url, "url", "u", "", "[REQUIRED] A custom URL to override the default endpoint. This allows you to specify a different URL for sending relays.")
-	pflag.StringVarP(&service, "service", "s", "", "[REQUIRED] The service alias to which the relays will be sent.")
 
 	// Optional flags
 	pflag.StringVarP(&data, "data", "d", "", "[OPTIONAL] The request body that will be sent as the relay. Must be a valid JSON string.")
@@ -86,10 +85,6 @@ func main() {
 		fmt.Println("🚫 Missing required flag: -u, --url for URL. Use --help for more information.")
 		os.Exit(1)
 	}
-	if service == "" {
-		fmt.Println("🚫 Missing required flag: -s, --service for service. Use --help for more information.")
-		os.Exit(1)
-	}
 	if executions == 0 {
 		fmt.Println("🚫 Missing required flag: -x, --executions for executions. Use --help for more information.")
 		os.Exit(1)
@@ -106,7 +101,6 @@ func main() {
 	/* Relay Util Init */
 	relayUtil := relay.NewRelayUtil(relay.Config{
 		URL:           url,
-		Service:       service,
 		Body:          []byte(data),
 		Headers:       headerMap,
 		Executions:    executions,
