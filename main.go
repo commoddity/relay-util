@@ -28,7 +28,7 @@ func init() {
 		fmt.Fprintf(os.Stderr, "\nExample command:\n")
 		fmt.Fprintf(os.Stderr, "  %s \\\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "    -u=https://path.rpc.grove.city/v1 \\\n")
-		fmt.Fprintf(os.Stderr, "    -s=eth \\\n")
+		fmt.Fprintf(os.Stderr, "    -H=\"target-service-id: F00C\" \\\n")
 		fmt.Fprintf(os.Stderr, "    -d='{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"eth_blockNumber\", \"params\": []}' \\\n")
 		fmt.Fprintf(os.Stderr, "    -x=3000 \\\n")
 		fmt.Fprintf(os.Stderr, "    -w=10 \\\n")

@@ -34,7 +34,12 @@ func PrintConfig(u *relay.Util) {
 
 	// Print the messages with colors and emojis
 	fmt.Printf("%s 🚀 Sending %s relays to %s\n", green("INFO"), formatWithCommas(u.Executions), maskAppID(urlStr.String()))
-	fmt.Printf("%s 📦 Request Body: %s\n", magenta("REQUEST"), string(u.Body))
+	if u.Body != nil {
+		fmt.Printf("%s 📡 Request Method: %s\n", magenta("REQUEST"), "POST")
+		fmt.Printf("%s 📦 Request Body: %s\n", magenta("REQUEST"), string(u.Body))
+	} else {
+		fmt.Printf("%s 📦 Request Method: %s\n", magenta("REQUEST"), "GET")
+	}
 	// Print headers
 	if len(u.Headers) > 0 {
 		fmt.Printf("%s ⚙️ Headers:\n", magenta("HEADERS"))
