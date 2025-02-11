@@ -51,13 +51,13 @@ func main() {
 	pflag.StringVarP(&service, "service", "s", "", "The service alias to which the relays will be sent.")
 
 	// Optional flags
-	pflag.StringVarP(&data, "data", "d", "", "The request body that will be sent as the relay. Must be a valid JSON string. [default: empty]")
-	pflag.StringSliceVarP(&headers, "headers", "H", nil, "Custom headers to include in the relay request, specified as -H \"Header-Name: value\". Can be used multiple times. [default: empty]")
-	pflag.IntVarP(&executions, "executions", "x", 1, "The total number of relays to execute. This defines how many times the relay will be sent. [default: 1]")
-	pflag.BoolVarP(&successBodies, "success-bodies", "b", false, "A flag that, when set, will cause the bodies of successful relay responses to be displayed in the log output. [default: false]")
-	pflag.IntVarP(&goroutines, "goroutines", "g", 5, "The level of concurrency for sending relays. This defines how many goroutines will be used to send relays in parallel. [default: 5]")
-	pflag.IntVarP(&wait, "wait", "w", 10, "The delay between individual relay requests, measured in milliseconds. This helps to control the rate at which relays are sent. [default: 10]")
-	pflag.IntVarP(&timeout, "timeout", "t", 20, "The timeout for individual relay requests, measured in seconds. [default: 20]")
+	pflag.StringVarP(&data, "data", "d", "", "[OPTIONAL] The request body that will be sent as the relay. Must be a valid JSON string.")
+	pflag.StringSliceVarP(&headers, "headers", "H", nil, "[OPTIONAL] Custom headers to include in the relay request, specified as -H \"Header-Name: value\". Can be used multiple times.")
+	pflag.IntVarP(&executions, "executions", "x", 1, "[REQUIRED] The total number of relays to execute. This defines how many times the relay will be sent.")
+	pflag.BoolVarP(&successBodies, "success-bodies", "b", false, "[OPTIONAL] A flag that, when set, will cause the bodies of successful relay responses to be displayed in the log output.")
+	pflag.IntVarP(&goroutines, "goroutines", "g", 5, "[OPTIONAL] The level of concurrency for sending relays. This defines how many goroutines will be used to send relays in parallel.")
+	pflag.IntVarP(&wait, "wait", "w", 10, "[OPTIONAL] The delay between individual relay requests, measured in milliseconds. This helps to control the rate at which relays are sent.")
+	pflag.IntVarP(&timeout, "timeout", "t", 20, "[OPTIONAL] The timeout for individual relay requests, measured in seconds.")
 
 	pflag.Parse()
 
