@@ -47,7 +47,7 @@ func main() {
 	var headers []string
 
 	// Required flags
-	pflag.StringVarP(&url, "url", "u", "", "[REQUIRED] A custom URL to override the default endpoint. This allows you to specify a different URL for sending relays.")
+	pflag.StringVarP(&url, "url", "u", "", "[REQUIRED] The URL to send the requests to.")
 
 	// Optional flags
 	pflag.StringVarP(&data, "data", "d", "", "[OPTIONAL] The request body that will be sent as the relay. Must be a valid JSON string.")
