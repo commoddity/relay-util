@@ -1,11 +1,10 @@
-module github.com/commoddity/relay-util
+module github.com/commoddity/relay-util/v2
 
 go 1.21.0
 
 require (
 	github.com/cheggaaa/pb/v3 v3.1.5
 	github.com/fatih/color v1.15.0
-	github.com/joho/godotenv v1.5.1
 	github.com/spf13/pflag v1.0.5
 )
 

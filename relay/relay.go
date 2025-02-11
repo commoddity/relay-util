@@ -12,8 +12,6 @@ import (
 	"time"
 
 	"github.com/cheggaaa/pb/v3"
-	"github.com/commoddity/relay-util/env"
-	"github.com/commoddity/relay-util/setup"
 	"github.com/fatih/color"
 )
 
@@ -45,42 +43,33 @@ type (
 	}
 
 	Config struct {
-		Env           env.EnvType
-		PlanType      env.PlanType
-		Chain         string
-		Request       string
-		OverrideURL   string
+		URL           string
+		Service       string
+		Body          []byte
+		Headers       http.Header
 		Executions    int
 		Goroutines    int
-		Delay         time.Duration
+		Wait          time.Duration
 		Timeout       time.Duration
-		Local         bool
 		SuccessBodies bool
-		Authorization string
 	}
 
 	Util struct {
-		HTTPClient            *http.Client
-		AppIDs                map[env.EnvType]map[env.PlanType]env.PortalAppData
-		Env                   env.EnvType
-		PlanType              env.PlanType
-		Chain                 string
-		URL                   string
-		SecretKey             string
-		Request               string
-		OverrideURL           string
-		Executions            int
-		Goroutines            int
-		GoroutinesConfig      goroutinesConfig
-		RequestsPerSecond     float64
-		Delay                 time.Duration
-		Timeout               time.Duration
-		ExecTime              time.Duration
-		Local                 bool
-		SuccessBodies         bool
-		IsBatch               bool
-		ResultChan            chan RelayResult
-		AuthorizationOverride string
+		HTTPClient        *http.Client
+		URL               string
+		Service           string
+		Body              []byte
+		Headers           http.Header
+		Executions        int
+		Goroutines        int
+		GoroutinesConfig  goroutinesConfig
+		RequestsPerSecond float64
+		Wait              time.Duration
+		Timeout           time.Duration
+		ExecTime          time.Duration
+		SuccessBodies     bool
+		IsBatch           bool
+		ResultChan        chan RelayResult
 	}
 
 	goroutinesConfig struct {
@@ -92,29 +81,21 @@ type (
 // NewRelayUtil creates a new instance of the Relay Util.
 func NewRelayUtil(config Config) *Util {
 	util := &Util{
-		HTTPClient:            &http.Client{Timeout: config.Timeout},
-		AppIDs:                env.GatherAppIDs(),
-		ResultChan:            make(chan RelayResult, config.Executions),
-		Env:                   config.Env,
-		PlanType:              config.PlanType,
-		Chain:                 config.Chain,
-		Request:               config.Request,
-		OverrideURL:           config.OverrideURL,
-		Executions:            config.Executions,
-		Goroutines:            config.Goroutines,
-		Delay:                 config.Delay,
-		Timeout:               config.Timeout,
-		Local:                 config.Local,
-		SuccessBodies:         config.SuccessBodies,
-		AuthorizationOverride: config.Authorization,
+		HTTPClient:    &http.Client{Timeout: config.Timeout},
+		ResultChan:    make(chan RelayResult, config.Executions),
+		URL:           config.URL,
+		Service:       config.Service,
+		Body:          config.Body,
+		Headers:       config.Headers,
+		Executions:    config.Executions,
+		Goroutines:    config.Goroutines,
+		Wait:          config.Wait,
+		Timeout:       config.Timeout,
+		SuccessBodies: config.SuccessBodies,
+		IsBatch:       json.Valid(config.Body) && strings.HasPrefix(strings.TrimSpace(string(config.Body)), "["),
 	}
 
-	util.GoroutinesConfig = util.getGoroutinesConfig(util.PlanType, util.Goroutines, util.Delay)
-
-	util.setURLStringAndKey()
-
-	// Determine if the request is a batch request
-	util.IsBatch = json.Valid([]byte(config.Request)) && strings.HasPrefix(strings.TrimSpace(config.Request), "[")
+	util.GoroutinesConfig = util.getGoroutinesConfig(util.Goroutines, util.Wait)
 
 	return util
 }
@@ -254,34 +235,6 @@ func (u *Util) SendRelays() {
 	close(u.ResultChan)
 }
 
-// setURLStringAndKey sets the URL and SecretKey fields on the Util struct.
-func (u *Util) setURLStringAndKey() {
-	if u.OverrideURL != "" {
-		u.URL = u.OverrideURL
-		return
-	}
-
-	appID := u.AppIDs[u.Env][u.PlanType].ID
-
-	if updateAppIDAndKeyIfDummy(u, appID) {
-		u.setURLStringAndKey() // Recursively call to get the updated URL and key
-	}
-
-	if u.Local {
-		u.URL = fmt.Sprintf("http://localhost:8080/relay/%s", u.Chain)
-	} else {
-		var domain string
-		if u.Env == env.EnvProd {
-			domain = "city"
-		} else {
-			domain = "town"
-		}
-		u.URL = fmt.Sprintf("https://%s.rpc.grove.%s/v1/%s", u.Chain, domain, appID)
-	}
-
-	u.SecretKey = u.AppIDs[u.Env][u.PlanType].Key
-}
-
 // IDFromString creates an ID from a string.
 func IDFromString(id string) ID {
 	return ID{string: id, isNumber: false}
@@ -324,19 +277,34 @@ func (i ID) String() string {
 	return i.string
 }
 
+// Add the setRequestHeaders method to the Util struct
+func (u *Util) setRequestHeaders(req *http.Request) {
+	// Set the "target-service-id" header
+	req.Header.Set("target-service-id", u.Service)
+
+	// Set any other headers from the Util struct
+	for key, values := range u.Headers {
+		for _, value := range values {
+			req.Header.Add(key, value)
+		}
+	}
+}
+
 // makeJSONRPCReq makes a JSON-RPC request to the Portal API.
 func (u *Util) makeJSONRPCReq() (*Response, error) {
-	req, err := http.NewRequest(http.MethodPost, u.URL, bytes.NewBuffer([]byte(u.Request)))
+	var req *http.Request
+	var err error
+	if len(u.Body) == 0 {
+		req, err = http.NewRequest(http.MethodGet, u.URL, nil)
+	} else {
+		req, err = http.NewRequest(http.MethodPost, u.URL, bytes.NewBuffer(u.Body))
+	}
 	if err != nil {
 		return nil, err
 	}
 
-	req.Header.Set("Content-Type", "application/json")
-	if u.AuthorizationOverride != "" {
-		req.Header.Set("Authorization", u.AuthorizationOverride)
-	} else if u.SecretKey != "" {
-		req.Header.Set("Authorization", u.SecretKey)
-	}
+	// Set headers using the new method
+	u.setRequestHeaders(req)
 
 	httpResp, err := u.HTTPClient.Do(req)
 	if err != nil {
@@ -352,7 +320,6 @@ func (u *Util) makeJSONRPCReq() (*Response, error) {
 	var resp Response
 	err = json.Unmarshal(body, &resp)
 	if err != nil {
-		fmt.Println("ERROR HERE", string(body))
 		return nil, err
 	}
 
@@ -361,15 +328,19 @@ func (u *Util) makeJSONRPCReq() (*Response, error) {
 
 // makeJSONRPCBatchReq makes a JSON-RPC request to the Portal API.
 func (u *Util) makeJSONRPCBatchReq() ([]*Response, error) {
-	req, err := http.NewRequest(http.MethodPost, u.URL, bytes.NewBuffer([]byte(u.Request)))
+	var req *http.Request
+	var err error
+	if len(u.Body) == 0 {
+		req, err = http.NewRequest(http.MethodGet, u.URL, nil)
+	} else {
+		req, err = http.NewRequest(http.MethodPost, u.URL, bytes.NewBuffer(u.Body))
+	}
 	if err != nil {
 		return nil, err
 	}
 
-	req.Header.Set("Content-Type", "application/json")
-	if u.OverrideURL == "" && u.SecretKey != "" {
-		req.Header.Set("Authorization", u.SecretKey)
-	}
+	// Set headers using the new method
+	u.setRequestHeaders(req)
 
 	httpResp, err := u.HTTPClient.Do(req)
 	if err != nil {
@@ -392,20 +363,7 @@ func (u *Util) makeJSONRPCBatchReq() ([]*Response, error) {
 }
 
 // getGoroutinesConfig returns the goroutines config based on the plan type.
-func (u *Util) getGoroutinesConfig(planType env.PlanType, goroutines int, delay time.Duration) goroutinesConfig {
-	if planType == env.PlanTypeStarter {
-		starterGoroutines := 3
-		starterDelay := (1 * time.Second) / 50
-
-		u.Goroutines = starterGoroutines
-		u.Delay = starterDelay
-
-		return goroutinesConfig{
-			goroutines: starterGoroutines,
-			delay:      starterDelay,
-		}
-	}
-
+func (u *Util) getGoroutinesConfig(goroutines int, delay time.Duration) goroutinesConfig {
 	return goroutinesConfig{
 		goroutines: goroutines,
 		delay:      delay,
@@ -454,22 +412,4 @@ func (u *goroutinesConfig) validateConfig() error {
 		return fmt.Errorf("delay must be greater than or equal to 0")
 	}
 	return nil
-}
-
-// updateAppIDAndKeyIfDummy updates the AppID and Key if the AppID is a dummy value.
-func updateAppIDAndKeyIfDummy(u *Util, appID string) (updated bool) {
-	if strings.Contains(appID, "dummy") {
-		if newAppID, newKey := setup.PromptUpdateDummyAppIDs(string(u.Env), string(u.PlanType)); newAppID != "" {
-			newAppIDs := u.AppIDs
-
-			newData := env.PortalAppData{ID: newAppID, Key: newKey}
-			newAppIDs[u.Env][u.PlanType] = newData
-
-			u.AppIDs = newAppIDs
-
-			return true
-		}
-	}
-
-	return false
 }

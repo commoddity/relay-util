@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/commoddity/relay-util/relay"
+	"github.com/commoddity/relay-util/v2/relay"
 	"github.com/fatih/color"
 )
 
@@ -29,23 +29,29 @@ func PrintConfig(u *relay.Util) {
 
 	// Define color functions
 	green := color.New(color.FgGreen).SprintFunc()
-	yellow := color.New(color.FgYellow).SprintFunc()
 	blue := color.New(color.FgBlue).SprintFunc()
 	magenta := color.New(color.FgMagenta).SprintFunc()
-	red := color.New(color.FgRed).SprintFunc()
+	yellow := color.New(color.FgYellow).SprintFunc()
 
 	// Print the messages with colors and emojis
 	fmt.Printf("%s 🚀 Sending %s relays to %s\n", green("INFO"), formatWithCommas(u.Executions), maskAppID(urlStr.String()))
-	if u.OverrideURL != "" {
-		fmt.Printf("%s 🔀 Overriding URL with: %s\n", red("OVERRIDE"), maskAppID(u.OverrideURL))
-	}
+	fmt.Printf("%s 🔗 Service: %s\n", yellow("CONFIG"), u.Service)
+	fmt.Printf("%s 📄 Request Body: %s\n", magenta("REQUEST"), string(u.Body))
 	fmt.Printf("%s 🧵 Goroutines: %s\n", blue("DETAIL"), formatWithCommas(u.Goroutines))
-	fmt.Printf("%s ⏱️  Delay: %s\n", blue("DETAIL"), u.Delay)
+	fmt.Printf("%s ⏱️  Wait: %s\n", blue("DETAIL"), u.Wait)
 	fmt.Printf("%s ⏳ Timeout: %s\n", blue("DETAIL"), u.Timeout)
-	fmt.Printf("%s 🌍 Env: %s\n", yellow("CONFIG"), u.Env)
-	fmt.Printf("%s 📝 Plan Type: %s\n", yellow("CONFIG"), u.PlanType)
-	fmt.Printf("%s 🔗 Chain: %s\n", yellow("CONFIG"), u.Chain)
-	fmt.Printf("%s 📄 Request Body: %s\n\n", magenta("REQUEST"), u.Request)
+	// Print headers
+	if len(u.Headers) > 0 {
+		fmt.Printf("%s 📬 Headers:\n", magenta("HEADERS"))
+		for key, values := range u.Headers {
+			for _, value := range values {
+				if strings.ToLower(key) == "authorization" {
+					value = "*****"
+				}
+				fmt.Printf("  %s: %s\n", key, value)
+			}
+		}
+	}
 }
 
 // LogResults logs the results of the relay execution to the console

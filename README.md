@@ -10,7 +10,7 @@
 ## Installation
 
 ```bash
-go install github.com/commoddity/relay-util@latest
+go install github.com/commoddity/relay-util/v2@latest
 ```
 
 ## Usage
