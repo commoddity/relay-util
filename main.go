@@ -27,15 +27,15 @@ func init() {
 		pflag.PrintDefaults()
 		fmt.Fprintf(os.Stderr, "\nExample command:\n")
 		fmt.Fprintf(os.Stderr, "  %s \\\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "    -u=https://path.rpc.grove.city/v1 {URL} \\\n")
-		fmt.Fprintf(os.Stderr, "    -s=eth {Service} \\\n")
-		fmt.Fprintf(os.Stderr, "    -d='{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"eth_blockNumber\", \"params\": []}' {Data} \\\n")
-		fmt.Fprintf(os.Stderr, "    -x=3000 {Executions} \\\n")
-		fmt.Fprintf(os.Stderr, "    -w=10 {Wait} \\\n")
-		fmt.Fprintf(os.Stderr, "    -g=500 {Goroutines} \\\n")
-		fmt.Fprintf(os.Stderr, "    -t=20 {Timeout} \\\n")
-		fmt.Fprintf(os.Stderr, "    -H=\"Authorization: Bearer token\" {Header} \\\n")
-		fmt.Fprintf(os.Stderr, "    -H=\"Custom-Header: value\" {Header}\n")
+		fmt.Fprintf(os.Stderr, "    -u=https://path.rpc.grove.city/v1 \\\n")
+		fmt.Fprintf(os.Stderr, "    -s=eth \\\n")
+		fmt.Fprintf(os.Stderr, "    -d='{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"eth_blockNumber\", \"params\": []}' \\\n")
+		fmt.Fprintf(os.Stderr, "    -x=3000 \\\n")
+		fmt.Fprintf(os.Stderr, "    -w=10 \\\n")
+		fmt.Fprintf(os.Stderr, "    -g=500 \\\n")
+		fmt.Fprintf(os.Stderr, "    -t=20 \\\n")
+		fmt.Fprintf(os.Stderr, "    -H=\"Authorization: api_key_123\" \\\n")
+		fmt.Fprintf(os.Stderr, "    -H=\"Custom-Header: value\"\n")
 	}
 }
 
@@ -47,13 +47,13 @@ func main() {
 	var headers []string
 
 	// Required flags
-	pflag.StringVarP(&url, "url", "u", "", "A custom URL to override the default endpoint. This allows you to specify a different URL for sending relays.")
-	pflag.StringVarP(&service, "service", "s", "", "The service alias to which the relays will be sent.")
+	pflag.StringVarP(&url, "url", "u", "", "[REQUIRED] A custom URL to override the default endpoint. This allows you to specify a different URL for sending relays.")
+	pflag.StringVarP(&service, "service", "s", "", "[REQUIRED] The service alias to which the relays will be sent.")
 
 	// Optional flags
 	pflag.StringVarP(&data, "data", "d", "", "[OPTIONAL] The request body that will be sent as the relay. Must be a valid JSON string.")
 	pflag.StringSliceVarP(&headers, "headers", "H", nil, "[OPTIONAL] Custom headers to include in the relay request, specified as -H \"Header-Name: value\". Can be used multiple times.")
-	pflag.IntVarP(&executions, "executions", "x", 1, "[REQUIRED] The total number of relays to execute. This defines how many times the relay will be sent.")
+	pflag.IntVarP(&executions, "executions", "x", 1, "[OPTIONAL] The total number of relays to execute. This defines how many times the relay will be sent.")
 	pflag.BoolVarP(&successBodies, "success-bodies", "b", false, "[OPTIONAL] A flag that, when set, will cause the bodies of successful relay responses to be displayed in the log output.")
 	pflag.IntVarP(&goroutines, "goroutines", "g", 5, "[OPTIONAL] The level of concurrency for sending relays. This defines how many goroutines will be used to send relays in parallel.")
 	pflag.IntVarP(&wait, "wait", "w", 10, "[OPTIONAL] The delay between individual relay requests, measured in milliseconds. This helps to control the rate at which relays are sent.")
