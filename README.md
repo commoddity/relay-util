@@ -21,7 +21,7 @@ relay-util -u=<url> -d=<data> -H=<header> -x=<executions> -g=<goroutines> -w=<wa
 
 ### Flags
 
-- `-u, --url`: [REQUIRED] A custom URL to override the default endpoint. This allows you to specify a different URL for sending relays.
+- `-u, --url`: [REQUIRED] The URL to send the requests to.
 - `-d, --data`: [OPTIONAL] The request body that will be sent as the relay. Must be a valid JSON string.
 - `-H, --headers`: [OPTIONAL] Custom headers to include in the relay request, specified as -H "Header-Name: value". Can be used multiple times. If required, the Service ID must be specified as `target-service-id`.
 - `-x, --executions`: [OPTIONAL] The total number of relays to execute. This defines how many times the relay will be sent.
