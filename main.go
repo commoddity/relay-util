@@ -86,11 +86,7 @@ func main() {
 		os.Exit(1)
 	}
 	if executions == 0 {
-		fmt.Println("🚫 Missing required flag: -x, --executions for executions. Use --help for more information.")
-		os.Exit(1)
-	}
-	if data == "" {
-		fmt.Println("🚫 Missing required flag: -d, --data for request. Use --help for more information.")
+		fmt.Println("🚫 Executions must be greater than 0. Use --help for more information.")
 		os.Exit(1)
 	}
 	if _, err := strconv.Atoi(strconv.Itoa(executions)); err != nil {
