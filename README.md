@@ -4,7 +4,7 @@
 </div>
 <br/>
 
-**Relay Util** is a CLI tool written in Go and is designed for simple load testing of [PATH]("https://github.com/buildwithgrove/path"). It allows configuration of concurrency, delay, and timeout and logs out results, such as success rate, errors, RPS and latency upon completion. 
+**Relay Util** is a CLI tool written in Go and is designed for simple load testing of [PATH](https://path.grove.city/). It allows configuration of concurrency, delay, and timeout and logs out results, such as success rate, errors, RPS and latency upon completion. 
 
 ## Installation
 
