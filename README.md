@@ -1,10 +1,10 @@
 <div align="center">
-    <h1>Relay Util</h1>
     <img src="https://github.com/commoddity/relay-util/blob/main/.github/relay-util.png?raw=true" alt="Relay Util logo" width="600"/>
     <br/>
-    <big>Relay Util is designed for simple load testing of [PATH](https://github.com/buildwithgrove/path). It allows configuration of concurrency, delay, and timeout and logs out results, such as success rate, errors, RPS and latency upon completion.</big>
 </div>
 <br/>
+
+**Relay Util** is a CLI tool written in Go and is designed for simple load testing of [PATH]("https://github.com/buildwithgrove/path"). It allows configuration of concurrency, delay, and timeout and logs out results, such as success rate, errors, RPS and latency upon completion. 
 
 ## Installation
 
