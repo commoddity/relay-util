@@ -1,6 +1,6 @@
 <div align="center">
     <h1>Relay Util</h1>
-    <img src=".github/relay-util.png" alt="Relay Util logo" width="600"/>
+    <img src="https://github.com/commoddity/relay-util/blob/main/.github/relay-util.png" alt="Relay Util logo" width="600"/>
     <br/>
     <big>Relay Util is a command-line tool written in Go that sends relays to a specified URL using configurable concurrency, delay and timeout settings. It supports various flags to control its behavior and is primarily designed for load testing services.</big>
 </div>
