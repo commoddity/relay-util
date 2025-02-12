@@ -22,12 +22,12 @@ relay-util -u=<url> -d=<data> -H=<header> -x=<executions> -g=<goroutines> -w=<wa
 
 - `-u, --url`: [REQUIRED] The URL to send the requests to.
 - `-d, --data`: [OPTIONAL] The request body that will be sent as the relay. Must be a valid JSON string.
-- `-H, --headers`: [OPTIONAL] Custom headers to include in the relay request, specified as -H "Header-Name: value". Can be used multiple times. The Service ID must be specified as `target-service-id`.
-- `-x, --executions`: [OPTIONAL] The total number of relays to execute. This defines how many times the relay will be sent.
+- `-H, --headers`: [OPTIONAL] Custom headers to include in the relay request, specified as -H "Header-Name: value". Can be used multiple times. **The Service ID must be specified as `target-service-id`**.
+- `-x, --executions`: [OPTIONAL] The total number of relays to execute. This defines the total number of relays to be sent.
 - `-g, --goroutines`: [OPTIONAL] The level of concurrency for sending relays. This defines how many goroutines will be used to send relays in parallel.
 - `-w, --wait`: [OPTIONAL] The delay between individual relay requests, measured in milliseconds. This helps to control the rate at which relays are sent.
 - `-t, --timeout`: [OPTIONAL] The timeout for individual relay requests, measured in seconds.
-- `-b, --success-bodies`: [OPTIONAL] A flag that, when set, will cause the bodies of successful relay responses to be displayed in the log output.
+- `-b, --success-bodies`: [OPTIONAL] A boolean flag that, when set, will cause the bodies of successful relay responses to be displayed in the log output.
 
 ## Example Usage
 
@@ -41,5 +41,6 @@ relay-util \
 -x=1000 \
 -g=50 \
 -w=100 \
--t=20
+-t=20 \
+-b
 ```
