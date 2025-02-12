@@ -311,6 +311,8 @@ func (u *Util) makeJSONRPCReq() (*Response, error) {
 		return nil, err
 	}
 
+	fmt.Println(string(body))
+
 	var resp Response
 	err = json.Unmarshal(body, &resp)
 	if err != nil {
