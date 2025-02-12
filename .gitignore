@@ -7,3 +7,5 @@ bin/*
 
 relay-util
 */relay-util
+
+.DS_Store
